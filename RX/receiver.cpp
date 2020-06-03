@@ -13,15 +13,16 @@ int main() {
     int shmid = shmget(key, bufferSize, 0666 | IPC_CREAT);
 
     // shmat to attach to shared memory
-        uint8_t* buffer = (uint8_t*)shmat(shmid, (void*)0, 0);
+    uint8_t* buffer = (uint8_t*)shmat(shmid, (void*)0, 0);
     uint8_t* r      = &buffer[bufferSize - 2];
     uint8_t* w      = &buffer[bufferSize - 1];
     *r              = 0;
     *w              = 0;
-   
+
     while (true) { // keep reading until you hit the read location
         while (*w == *r) {
-            usleep(100);
+            usleep(10000);
+            // std::cout << "Waiting for message... \n";
         }
         if (buffer[*r] == '\\') break;
         std::cout << buffer[*r];
@@ -29,7 +30,6 @@ int main() {
 
         *r = (*r + 1) % (bufferSize - 2);
         // std::cout << "I'm done reading at location " << (int)*r << "\n";
-        // sleep(1);
     }
 
     // detach from shared memory

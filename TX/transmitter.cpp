@@ -28,18 +28,17 @@ int main() {
         std::getline(std::cin, inputStr);
         uint16_t charLocation = 0;
 
-        const char* cstr = inputStr.c_str();
-
         while (inputStr[charLocation] != 0) { // scan the string
-            while (*w == ((*r) - 1) || *w == ((*r) + 253)) {
-                usleep(100);
+            while (*w == ((*r) - 1) || *w == ((*r) + bufferSize - 3)) {
+                // std::cout << "Waiting for the buffer to be read\n";
+                usleep(10000);
             }; // wait if this is where the reader is located
             buffer[*w] = inputStr[charLocation];
             *w         = (*w + 1) % (bufferSize - 2);
             charLocation++;
         }
 
-        std::cout << "I'm done writing at location " << (int)*w << "\n";
+        // std::cout << "I'm done writing at location " << (int)*w << "\n";
     }
 
     printf("Termination character received\n");
