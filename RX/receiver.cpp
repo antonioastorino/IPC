@@ -3,8 +3,10 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
+#include "test.hpp"
 
 int main() {
+    testPrint();
     // ftok to generate unique key
     key_t key                 = ftok("shmfile", 65);
     const uint16_t bufferSize = 256;
