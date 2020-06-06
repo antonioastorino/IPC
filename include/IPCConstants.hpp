@@ -1,6 +1,7 @@
-#ifndef IPCConstatns_hpp
-#define IPCConstatns_hpp
+#ifndef IPCConstants_hpp
+#define IPCConstants_hpp
+
+#define BUFFER_SIZE (5)
 
 
-
-#endif /* IPCConstatns_hpp */
+#endif /* IPCConstants_hpp */

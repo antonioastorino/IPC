@@ -1,23 +1,24 @@
 #include "HEGEncoding.hpp"
+#include "IPCConstants.hpp"
 #include <iostream>
 #include <stdio.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
 #include <vector>
+#include <bitset>
 
 int main() {
     // ftok to generate unique key
     key_t key                 = ftok("shmfile", 65);
-    const uint16_t bufferSize = 256;
 
     // shmget returns an identifier in shmid
-    int shmid = shmget(key, bufferSize, 0666 | IPC_CREAT);
+    int shmid = shmget(key, BUFFER_SIZE, 0666 | IPC_CREAT);
 
     // shmat to attach to shared memory
     uint8_t* buffer = (uint8_t*)shmat(shmid, (void*)0, 0);
-    uint8_t* r      = &buffer[bufferSize - 2];
-    uint8_t* w      = &buffer[bufferSize - 1];
+    uint8_t* r      = &buffer[BUFFER_SIZE - 2];
+    uint8_t* w      = &buffer[BUFFER_SIZE - 1];
     *r              = 0;
     *w              = 0;
 
@@ -46,7 +47,12 @@ int main() {
                     endOfTransmission = true;
                     break;
                 }
-                std::cout << receivedMsg << std::endl;
+                std::cout << receivedMsg;
+                std::cout.flush();
+                // for (auto it = data.begin(); it != data.end(); it ++) {
+                //     std::cout << std::bitset<8>(*it);
+                // }
+                // std::cout << std::endl;
                 data = {};
             }
             // std::cout << "Waiting for message... \n";
@@ -54,7 +60,7 @@ int main() {
 
         data.push_back(buffer[*r]);
 
-        *r = (*r + 1) % (bufferSize - 2);
+        *r = (*r + 1) % (BUFFER_SIZE - 2);
         // std::cout << "I'm done reading at location " << (int)*r << "\n";
     }
 

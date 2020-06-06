@@ -7,7 +7,7 @@ target_folder="./"
 # edit your build folder if you want
 build_folder="../build"
 # choose one or more search paths for headers and source
-search_paths="./ ../libheg"
+search_paths="./ ../include ../../HEG/include ../../HEG/src"
 
 make_file="$base_dir/Makefile"
 object_folder="$build_folder/objects"

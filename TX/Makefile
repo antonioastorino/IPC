@@ -4,7 +4,8 @@ CPPFLAGS=-c -Wextra -std=c++14 -O$(OPT) -g
 CFLAGS=-c -Wextra -O$(OPT) -g
 CPPC=g++
 CC=gcc
-INC= -I../libheg/include\
+INC= -I../../HEG/include\
+ -I../include\
 
 .PHONY: all clean check-directory make-opt check-opt-value
 
@@ -29,19 +30,19 @@ make-opt:
 .//transmitter-out-$(OPT): ../build/objects/transmitter.o ../build/objects/HEGMap.o ../build/objects/BinayMessageBuilder.o ../build/objects/HEGLog.o ../build/objects/HEGEncoding.o
 	$(CPPC) $(INC) -o $@ $^
 
-../build/objects/transmitter.o: ./transmitter.cpp ../libheg/include/BinaryMessageBuilder.hpp ../libheg/include/HEGMap.hpp 
+../build/objects/transmitter.o: ./transmitter.cpp ../../HEG/include/BinaryMessageBuilder.hpp ../../HEG/include/HEGMap.hpp ../include/IPCConstants.hpp 
 	$(CPPC) $(INC) $(CPPFLAGS) $< -o $@
 
-../build/objects/HEGMap.o: ../libheg/src/HEGMap.cpp ../libheg/include/HEGMap.hpp 
+../build/objects/HEGMap.o: ../../HEG/src/HEGMap.cpp ../../HEG/include/HEGMap.hpp 
 	$(CPPC) $(INC) $(CPPFLAGS) $< -o $@
 
-../build/objects/BinayMessageBuilder.o: ../libheg/src/BinayMessageBuilder.cpp ../libheg/include/BinaryMessageBuilder.hpp 
+../build/objects/BinayMessageBuilder.o: ../../HEG/src/BinayMessageBuilder.cpp ../../HEG/include/BinaryMessageBuilder.hpp 
 	$(CPPC) $(INC) $(CPPFLAGS) $< -o $@
 
-../build/objects/HEGLog.o: ../libheg/src/HEGLog.cpp ../libheg/include/HEGLog.hpp 
+../build/objects/HEGLog.o: ../../HEG/src/HEGLog.cpp ../../HEG/include/HEGLog.hpp 
 	$(CPPC) $(INC) $(CPPFLAGS) $< -o $@
 
-../build/objects/HEGEncoding.o: ../libheg/src/HEGEncoding.cpp ../libheg/include/HEGEncoding.hpp ../libheg/include/HEGDataTypes.hpp ../libheg/include/HEGLog.hpp 
+../build/objects/HEGEncoding.o: ../../HEG/src/HEGEncoding.cpp ../../HEG/include/HEGEncoding.hpp ../../HEG/include/HEGDataTypes.hpp ../../HEG/include/HEGLog.hpp 
 	$(CPPC) $(INC) $(CPPFLAGS) $< -o $@
 
 clean:
