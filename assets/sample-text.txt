@@ -1,0 +1,674 @@
+--- https://en.wikipedia.org/wiki/Huffman_coding ---
+
+Huffman coding
+Char	Freq	Code
+space	7	111
+a	4	010
+e	4	000
+f	3	1101
+h	2	1010
+i	2	1000
+m	2	0111
+n	2	0010
+s	2	1011
+t	2	0110
+l	1	11001
+o	1	00110
+p	1	10011
+r	1	11000
+u	1	00111
+x	1	10010
+In computer science and information theory, a Huffman code is a particular type of optimal prefix code that is commonly used for lossless data compression. The process of finding or using such a code proceeds by means of Huffman coding, an algorithm developed by David A. Huffman while he was a Sc.D. student at MIT, and published in the 1952 paper "A Method for the Construction of Minimum-Redundancy Codes".[1]
+
+The output from Huffman's algorithm can be viewed as a variable-length code table for encoding a source symbol (such as a character in a file). The algorithm derives this table from the estimated probability or frequency of occurrence (weight) for each possible value of the source symbol. As in other entropy encoding methods, more common symbols are generally represented using fewer bits than less common symbols. Huffman's method can be efficiently implemented, finding a code in time linear to the number of input weights if these weights are sorted.[2] However, although optimal among methods encoding symbols separately, Huffman coding is not always optimal among all compression methods - it is replaced with arithmetic coding or asymmetric numeral systems if better compression ratio is required.
+
+Contents
+
+
+1 History
+2 Terminology
+3 Problem definition
+3.1 Informal description
+3.2 Formalized description
+3.3 Example
+4 Basic technique
+4.1 Compression
+4.2 Decompression
+5 Main properties
+5.1 Optimality
+6 Variations
+6.1 n-ary Huffman coding
+6.2 Adaptive Huffman coding
+6.3 Huffman template algorithm
+6.4 Length-limited Huffman coding/minimum variance Huffman coding
+6.5 Huffman coding with unequal letter costs
+6.6 Optimal alphabetic binary trees (Hu–Tucker coding)
+6.7 The canonical Huffman code
+7 Applications
+8 References
+9 Bibliography
+10 External links
+History
+
+In 1951, David A. Huffman and his MIT information theory classmates were given the choice of a term paper or a final exam. The professor, Robert M. Fano, assigned a term paper on the problem of finding the most efficient binary code. Huffman, unable to prove any codes were the most efficient, was about to give up and start studying for the final when he hit upon the idea of using a frequency-sorted binary tree and quickly proved this method the most efficient.[3]
+
+In doing so, Huffman outdid Fano, who had worked with information theory inventor Claude Shannon to develop a similar code. Building the tree from the bottom up guaranteed optimality, unlike the top-down approach of Shannon–Fano coding.
+
+Terminology
+
+Huffman coding uses a specific method for choosing the representation for each symbol, resulting in a prefix code (sometimes called "prefix-free codes", that is, the bit string representing some particular symbol is never a prefix of the bit string representing any other symbol). Huffman coding is such a widespread method for creating prefix codes that the term "Huffman code" is widely used as a synonym for "prefix code" even when such a code is not produced by Huffman's algorithm.
+
+Problem definition
+
+
+Constructing a Huffman Tree
+Informal description
+
+Given
+A set of symbols and their weights (usually proportional to probabilities).
+Find
+A prefix-free binary code (a set of codewords) with minimum expected codeword length (equivalently, a tree with minimum weighted path length from the root).
+Formalized description
+
+Input.
+Alphabet {\displaystyle A=(a_{1},a_{2},\dots ,a_{n})}, which is the symbol alphabet of size n. 
+Tuple {\displaystyle W=(w_{1},w_{2},\dots ,w_{n})}, which is the tuple of the (positive) symbol weights (usually proportional to probabilities), i.e. {\displaystyle w_{i}=\mathrm {weight} \left(a_{i}\right),\,i\in \{1,2,...,n\}}. 
+
+Output.
+Code {\displaystyle C\left(W\right)=(c_{1},c_{2},\dots ,c_{n})}, which is the tuple of (binary) codewords, where c_{i} is the codeword for {\displaystyle a_{i},\,i\in \{1,2,...,n\}}.
+
+Goal.
+Let {\displaystyle L\left(C\left(W\right)\right)=\sum _{i=1}^{n}{w_{i}\times \mathrm {length} \left(c_{i}\right)}} be the weighted path length of code C. Condition: {\displaystyle L\left(C\left(W\right)\right)\leq L\left(T\left(W\right)\right)} for any code {\displaystyle T\left(W\right)}.
+
+Example
+
+We give an example of the result of Huffman coding for a code with five characters and given weights. We will not verify that it minimizes L over all codes, but we will compute L and compare it to the Shannon entropy H of the given set of weights; the result is nearly optimal.
+
+Input (A, W)	Symbol (ai)	a	b	c	d	e	Sum
+Weights (wi)	0.10	0.15	0.30	0.16	0.29	= 1
+Output C	Codewords (ci)	010	011	11	00	10	 
+Codeword length (in bits)
+(li)	3	3	2	2	2
+Contribution to weighted path length
+(li wi )	0.30	0.45	0.60	0.32	0.58	L(C) = 2.25
+Optimality	Probability budget
+(2−li)	1/8	1/8	1/4	1/4	1/4	= 1.00
+Information content (in bits)
+(−log2 wi) ≈	3.32	2.74	1.74	2.64	1.79	 
+Contribution to entropy
+(−wi log2 wi)	0.332	0.411	0.521	0.423	0.518	H(A) = 2.205
+For any code that is biunique, meaning that the code is uniquely decodeable, the sum of the probability budgets across all symbols is always less than or equal to one. In this example, the sum is strictly equal to one; as a result, the code is termed a complete code. If this is not the case, one can always derive an equivalent code by adding extra symbols (with associated null probabilities), to make the code complete while keeping it biunique.
+
+As defined by Shannon (1948), the information content h (in bits) of each symbol ai with non-null probability is
+
+h(a_{i})=\log _{2}{1 \over w_{i}}.
+The entropy H (in bits) is the weighted sum, across all symbols ai with non-zero probability wi, of the information content of each symbol:
+
+H(A)=\sum _{w_{i}>0}w_{i}h(a_{i})=\sum _{w_{i}>0}w_{i}\log _{2}{1 \over w_{i}}=-\sum _{w_{i}>0}w_{i}\log _{2}{w_{i}}.
+(Note: A symbol with zero probability has zero contribution to the entropy, since \lim _{w\to 0^{+}}w\log _{2}w=0 So for simplicity, symbols with zero probability can be left out of the formula above.)
+
+As a consequence of Shannon's source coding theorem, the entropy is a measure of the smallest codeword length that is theoretically possible for the given alphabet with associated weights. In this example, the weighted average codeword length is 2.25 bits per symbol, only slightly larger than the calculated entropy of 2.205 bits per symbol. So not only is this code optimal in the sense that no other feasible code performs better, but it is very close to the theoretical limit established by Shannon.
+
+In general, a Huffman code need not be unique. Thus the set of Huffman codes for a given probability distribution is a non-empty subset of the codes minimizing L(C) for that probability distribution. (However, for each minimizing codeword length assignment, there exists at least one Huffman code with those lengths.)
+
+Basic technique
+
+Compression
+
+
+Visualisation of the use of Huffman coding to encode the message "A_DEAD_DAD_CEDED_A_BAD_BABE_A_BEADED_ABACA_
+BED". In steps 2 to 6, the letters are sorted by increasing frequency, and the least frequent two at each step are combined and reinserted into the list, and a partial tree is constructed. The final tree in step 6 is traversed to generate the dictionary in step 7. Step 8 uses it to encode the message.
+The technique works by creating a binary tree of nodes. These can be stored in a regular array, the size of which depends on the number of symbols, n. A node can be either a leaf node or an internal node. Initially, all nodes are leaf nodes, which contain the symbol itself, the weight (frequency of appearance) of the symbol and optionally, a link to a parent node which makes it easy to read the code (in reverse) starting from a leaf node. Internal nodes contain a weight, links to two child nodes and an optional link to a parent node. As a common convention, bit '0' represents following the left child and bit '1' represents following the right child. A finished tree has up to n leaf nodes and n-1 internal nodes. A Huffman tree that omits unused symbols produces the most optimal code lengths.
+
+The process begins with the leaf nodes containing the probabilities of the symbol they represent. Then, the process takes the two nodes with smallest probability, and creates a new internal node having these two nodes as children. The weight of the new node is set to the sum of the weight of the children. We then apply the process again, on the new internal node and on the remaining nodes (i.e., we exclude the two leaf nodes), we repeat this process until only one node remains, which is the root of the Huffman tree.
+
+The simplest construction algorithm uses a priority queue where the node with lowest probability is given highest priority:
+
+Create a leaf node for each symbol and add it to the priority queue.
+While there is more than one node in the queue:
+Remove the two nodes of highest priority (lowest probability) from the queue
+Create a new internal node with these two nodes as children and with probability equal to the sum of the two nodes' probabilities.
+Add the new node to the queue.
+The remaining node is the root node and the tree is complete.
+Since efficient priority queue data structures require O(log n) time per insertion, and a tree with n leaves has 2n−1 nodes, this algorithm operates in O(n log n) time, where n is the number of symbols.
+
+If the symbols are sorted by probability, there is a linear-time (O(n)) method to create a Huffman tree using two queues, the first one containing the initial weights (along with pointers to the associated leaves), and combined weights (along with pointers to the trees) being put in the back of the second queue. This assures that the lowest weight is always kept at the front of one of the two queues:
+
+Start with as many leaves as there are symbols.
+Enqueue all leaf nodes into the first queue (by probability in increasing order so that the least likely item is in the head of the queue).
+While there is more than one node in the queues:
+Dequeue the two nodes with the lowest weight by examining the fronts of both queues.
+Create a new internal node, with the two just-removed nodes as children (either node can be either child) and the sum of their weights as the new weight.
+Enqueue the new node into the rear of the second queue.
+The remaining node is the root node; the tree has now been generated.
+In many cases, time complexity is not very important in the choice of algorithm here, since n here is the number of symbols in the alphabet, which is typically a very small number (compared to the length of the message to be encoded); whereas complexity analysis concerns the behavior when n grows to be very large.
+
+It is generally beneficial to minimize the variance of codeword length. For example, a communication buffer receiving Huffman-encoded data may need to be larger to deal with especially long symbols if the tree is especially unbalanced. To minimize variance, simply break ties between queues by choosing the item in the first queue. This modification will retain the mathematical optimality of the Huffman coding while both minimizing variance and minimizing the length of the longest character code.
+
+Decompression
+
+Generally speaking, the process of decompression is simply a matter of translating the stream of prefix codes to individual byte values, usually by traversing the Huffman tree node by node as each bit is read from the input stream (reaching a leaf node necessarily terminates the search for that particular byte value). Before this can take place, however, the Huffman tree must be somehow reconstructed. In the simplest case, where character frequencies are fairly predictable, the tree can be preconstructed (and even statistically adjusted on each compression cycle) and thus reused every time, at the expense of at least some measure of compression efficiency. Otherwise, the information to reconstruct the tree must be sent a priori. A naive approach might be to prepend the frequency count of each character to the compression stream. Unfortunately, the overhead in such a case could amount to several kilobytes, so this method has little practical use. If the data is compressed using canonical encoding, the compression model can be precisely reconstructed with just B2^{B} bits of information (where B is the number of bits per symbol). Another method is to simply prepend the Huffman tree, bit by bit, to the output stream. For example, assuming that the value of 0 represents a parent node and 1 a leaf node, whenever the latter is encountered the tree building routine simply reads the next 8 bits to determine the character value of that particular leaf. The process continues recursively until the last leaf node is reached; at that point, the Huffman tree will thus be faithfully reconstructed. The overhead using such a method ranges from roughly 2 to 320 bytes (assuming an 8-bit alphabet). Many other techniques are possible as well. In any case, since the compressed data can include unused "trailing bits" the decompressor must be able to determine when to stop producing output. This can be accomplished by either transmitting the length of the decompressed data along with the compression model or by defining a special code symbol to signify the end of input (the latter method can adversely affect code length optimality, however).
+
+Main properties
+
+The probabilities used can be generic ones for the application domain that are based on average experience, or they can be the actual frequencies found in the text being compressed. This requires that a frequency table must be stored with the compressed text. See the Decompression section above for more information about the various techniques employed for this purpose.
+
+Optimality
+
+See also Arithmetic coding#Huffman coding
+Huffman's original algorithm is optimal for a symbol-by-symbol coding with a known input probability distribution, i.e., separately encoding unrelated symbols in such a data stream. However, it is not optimal when the symbol-by-symbol restriction is dropped, or when the probability mass functions are unknown. Also, if symbols are not independent and identically distributed, a single code may be insufficient for optimality. Other methods such as arithmetic coding often have better compression capability.
+
+Although both aforementioned methods can combine an arbitrary number of symbols for more efficient coding and generally adapt to the actual input statistics, arithmetic coding does so without significantly increasing its computational or algorithmic complexities (though the simplest version is slower and more complex than Huffman coding). Such flexibility is especially useful when input probabilities are not precisely known or vary significantly within the stream. However, Huffman coding is usually faster and arithmetic coding was historically a subject of some concern over patent issues. Thus many technologies have historically avoided arithmetic coding in favor of Huffman and other prefix coding techniques. As of mid-2010, the most commonly used techniques for this alternative to Huffman coding have passed into the public domain as the early patents have expired.
+
+For a set of symbols with a uniform probability distribution and a number of members which is a power of two, Huffman coding is equivalent to simple binary block encoding, e.g., ASCII coding. This reflects the fact that compression is not possible with such an input, no matter what the compression method, i.e., doing nothing to the data is the optimal thing to do.
+
+Huffman coding is optimal among all methods in any case where each input symbol is a known independent and identically distributed random variable having a probability that is dyadic. Prefix codes, and thus Huffman coding in particular, tend to have inefficiency on small alphabets, where probabilities often fall between these optimal (dyadic) points. The worst case for Huffman coding can happen when the probability of the most likely symbol far exceeds 2−1 = 0.5, making the upper limit of inefficiency unbounded.
+
+There are two related approaches for getting around this particular inefficiency while still using Huffman coding. Combining a fixed number of symbols together ("blocking") often increases (and never decreases) compression. As the size of the block approaches infinity, Huffman coding theoretically approaches the entropy limit, i.e., optimal compression[citation needed]. However, blocking arbitrarily large groups of symbols is impractical, as the complexity of a Huffman code is linear in the number of possibilities to be encoded, a number that is exponential in the size of a block. This limits the amount of blocking that is done in practice.
+
+A practical alternative, in widespread use, is run-length encoding. This technique adds one step in advance of entropy coding, specifically counting (runs) of repeated symbols, which are then encoded. For the simple case of Bernoulli processes, Golomb coding is optimal among prefix codes for coding run length, a fact proved via the techniques of Huffman coding.[4] A similar approach is taken by fax machines using modified Huffman coding. However, run-length coding is not as adaptable to as many input types as other compression technologies.
+
+Variations
+
+Many variations of Huffman coding exist,[5] some of which use a Huffman-like algorithm, and others of which find optimal prefix codes (while, for example, putting different restrictions on the output). Note that, in the latter case, the method need not be Huffman-like, and, indeed, need not even be polynomial time.
+
+n-ary Huffman coding
+
+The n-ary Huffman algorithm uses the {0, 1, ... , n − 1} alphabet to encode message and build an n-ary tree. This approach was considered by Huffman in his original paper. The same algorithm applies as for binary (n equals 2) codes, except that the n least probable symbols are taken together, instead of just the 2 least probable. Note that for n greater than 2, not all sets of source words can properly form an n-ary tree for Huffman coding. In these cases, additional 0-probability place holders must be added. This is because the tree must form an n to 1 contractor; for binary coding, this is a 2 to 1 contractor, and any sized set can form such a contractor. If the number of source words is congruent to 1 modulo n-1, then the set of source words will form a proper Huffman tree.
+
+Adaptive Huffman coding
+
+A variation called adaptive Huffman coding involves calculating the probabilities dynamically based on recent actual frequencies in the sequence of source symbols, and changing the coding tree structure to match the updated probability estimates. It is used rarely in practice, since the cost of updating the tree makes it slower than optimized adaptive arithmetic coding, which is more flexible and has better compression.
+
+Huffman template algorithm
+
+Most often, the weights used in implementations of Huffman coding represent numeric probabilities, but the algorithm given above does not require this; it requires only that the weights form a totally ordered commutative monoid, meaning a way to order weights and to add them. The Huffman template algorithm enables one to use any kind of weights (costs, frequencies, pairs of weights, non-numerical weights) and one of many combining methods (not just addition). Such algorithms can solve other minimization problems, such as minimizing \max _{i}\left[w_{i}+\mathrm {length} \left(c_{i}\right)\right], a problem first applied to circuit design.
+
+Length-limited Huffman coding/minimum variance Huffman coding
+
+Length-limited Huffman coding is a variant where the goal is still to achieve a minimum weighted path length, but there is an additional restriction that the length of each codeword must be less than a given constant. The package-merge algorithm solves this problem with a simple greedy approach very similar to that used by Huffman's algorithm. Its time complexity is O(nL), where L is the maximum length of a codeword. No algorithm is known to solve this problem in O(n) or O(n\log n) time, unlike the presorted and unsorted conventional Huffman problems, respectively.
+
+Huffman coding with unequal letter costs
+
+In the standard Huffman coding problem, it is assumed that each symbol in the set that the code words are constructed from has an equal cost to transmit: a code word whose length is N digits will always have a cost of N, no matter how many of those digits are 0s, how many are 1s, etc. When working under this assumption, minimizing the total cost of the message and minimizing the total number of digits are the same thing.
+
+Huffman coding with unequal letter costs is the generalization without this assumption: the letters of the encoding alphabet may have non-uniform lengths, due to characteristics of the transmission medium. An example is the encoding alphabet of Morse code, where a 'dash' takes longer to send than a 'dot', and therefore the cost of a dash in transmission time is higher. The goal is still to minimize the weighted average codeword length, but it is no longer sufficient just to minimize the number of symbols used by the message. No algorithm is known to solve this in the same manner or with the same efficiency as conventional Huffman coding, though it has been solved by Karp whose solution has been refined for the case of integer costs by Golin.
+
+Optimal alphabetic binary trees (Hu–Tucker coding)
+
+In the standard Huffman coding problem, it is assumed that any codeword can correspond to any input symbol. In the alphabetic version, the alphabetic order of inputs and outputs must be identical. Thus, for example, A=\left\{a,b,c\right\} could not be assigned code H\left(A,C\right)=\left\{00,1,01\right\}, but instead should be assigned either H\left(A,C\right)=\left\{00,01,1\right\} or H\left(A,C\right)=\left\{0,10,11\right\}. This is also known as the Hu–Tucker problem, after T. C. Hu and Alan Tucker, the authors of the paper presenting the first O(n\log n)-time solution to this optimal binary alphabetic problem,[6] which has some similarities to Huffman algorithm, but is not a variation of this algorithm. A later method, the Garsia–Wachs algorithm of Adriano Garsia and Michelle L. Wachs (1977), uses simpler logic to perform the same comparisons in the same total time bound. These optimal alphabetic binary trees are often used as binary search trees.[7]
+
+The canonical Huffman code
+
+Main article: Canonical Huffman code
+If weights corresponding to the alphabetically ordered inputs are in numerical order, the Huffman code has the same lengths as the optimal alphabetic code, which can be found from calculating these lengths, rendering Hu–Tucker coding unnecessary. The code resulting from numerically (re-)ordered input is sometimes called the canonical Huffman code and is often the code used in practice, due to ease of encoding/decoding. The technique for finding this code is sometimes called Huffman–Shannon–Fano coding, since it is optimal like Huffman coding, but alphabetic in weight probability, like Shannon–Fano coding. The Huffman–Shannon–Fano code corresponding to the example is \{000,001,01,10,11\}, which, having the same codeword lengths as the original solution, is also optimal. But in canonical Huffman code, the result is \{110,111,00,01,10\}.
+
+Applications
+
+Arithmetic coding and Huffman coding produce equivalent results — achieving entropy — when every symbol has a probability of the form 1/2k. In other circumstances, arithmetic coding can offer better compression than Huffman coding because — intuitively — its "code words" can have effectively non-integer bit lengths, whereas code words in prefix codes such as Huffman codes can only have an integer number of bits. Therefore, a code word of length k only optimally matches a symbol of probability 1/2k and other probabilities are not represented optimally; whereas the code word length in arithmetic coding can be made to exactly match the true probability of the symbol. This difference is especially striking for small alphabet sizes.
+
+Prefix codes nevertheless remain in wide use because of their simplicity, high speed, and lack of patent coverage. They are often used as a "back-end" to other compression methods. DEFLATE (PKZIP's algorithm) and multimedia codecs such as JPEG and MP3 have a front-end model and quantization followed by the use of prefix codes; these are often called "Huffman codes" even though most applications use pre-defined variable-length codes rather than codes designed using Huffman's algorithm.
+
+References
+
+	Wikimedia Commons has media related to Huffman coding.
+ Huffman, D. (1952). "A Method for the Construction of Minimum-Redundancy Codes" (PDF). Proceedings of the IRE. 40 (9): 1098–1101. doi:10.1109/JRPROC.1952.273898.
+ Van Leeuwen, Jan (1976). "On the construction of Huffman trees" (PDF). ICALP: 382–410. Retrieved 2014-02-20.
+ Huffman, Ken (1991). "Profile: David A. Huffman: Encoding the "Neatness" of Ones and Zeroes". Scientific American: 54–58.
+ Gallager, R.G.; van Voorhis, D.C. (1975). "Optimal source codes for geometrically distributed integer alphabets". IEEE Transactions on Information Theory. 21 (2): 228–230. doi:10.1109/TIT.1975.1055357.
+ Abrahams, J. (1997-06-11). Written at Arlington, VA, USA. Division of Mathematics, Computer & Information Sciences, Office of Naval Research (ONR). "Code and Parse Trees for Lossless Source Encoding". Compression and Complexity of Sequences 1997 Proceedings. Salerno: IEEE: 145–171. CiteSeerX 10.1.1.589.4726. doi:10.1109/SEQUEN.1997.666911. ISBN 0-8186-8132-2.
+ Hu, T. C.; Tucker, A. C. (1971). "Optimal Computer Search Trees and Variable-Length Alphabetical Codes". SIAM Journal on Applied Mathematics. 21 (4): 514. doi:10.1137/0121057. JSTOR 2099603.
+ Knuth, Donald E. (1998), "Algorithm G (Garsia–Wachs algorithm for optimum binary trees)", The Art of Computer Programming, Vol. 3: Sorting and Searching (2nd ed.), Addison–Wesley, pp. 451–453. See also History and bibliography, pp. 453–454.
+Bibliography
+
+Thomas H. Cormen, Charles E. Leiserson, Ronald L. Rivest, and Clifford Stein. Introduction to Algorithms, Second Edition. MIT Press and McGraw-Hill, 2001. ISBN 0-262-03293-7. Section 16.3, pp. 385–392.
+External links
+
+Huffman coding in various languages on Rosetta Code
+Huffman codes (python implementation)
+A visualization of Huffman coding
+hide
+v
+t
+e
+Data compression methods
+Lossless	
+Entropy type	
+Arithmetic
+Asymmetric numeral systems
+Golomb
+Huffman
+Adaptive
+Canonical
+Modified
+Range
+Shannon
+Shannon–Fano
+Shannon–Fano–Elias
+Tunstall
+Unary
+Universal
+Exp-Golomb
+Fibonacci
+Gamma
+Levenshtein
+Dictionary type	
+Byte pair encoding
+Lempel–Ziv
+Brotli
+DEFLATE
+LZ4
+LZFSE
+LZJB
+LZMA
+LZO
+LZRW
+LZS
+LZSS
+LZW
+LZWL
+LZX
+Snappy
+Zstandard
+Other types	
+BWT
+CTW
+Delta
+DMC
+DPCM
+LDCT
+MTF
+PAQ
+PPM
+RLE
+Lossy	
+Transform type	
+Discrete cosine transform
+DCT
+MDCT
+DST
+FFT
+Wavelet
+Daubechies
+DWT
+SPIHT
+Predictive type	
+DPCM
+ADPCM
+LPC
+ACELP
+CELP
+LAR
+LSP
+WLPC
+Motion
+Compensation
+Estimation
+Vector
+Psychoacoustic
+Audio	
+Concepts	
+Bit rate
+ABR
+CBR
+VBR
+Companding
+Convolution
+Dynamic range
+Latency
+Nyquist–Shannon theorem
+Sampling
+Sound quality
+Speech coding
+Sub-band coding
+Codec parts	
+A-law
+μ-law
+DPCM
+ADPCM
+FT
+FFT
+LPC
+ACELP
+CELP
+LAR
+LSP
+WLPC
+MDCT
+Psychoacoustic model
+Image	
+Concepts	
+Chroma subsampling
+Coding tree unit
+Color space
+Compression artifact
+Image resolution
+Macroblock
+Pixel
+PSNR
+Quantization
+Standard test image
+Methods	
+Chain code
+DCT
+DEFLATE
+Fractal
+KLT
+LP
+RLE
+Wavelet
+Daubechies
+DWT
+EZW
+SPIHT
+Video	
+Concepts	
+Bit rate
+ABR
+CBR
+VBR
+Display resolution
+Frame
+Frame rate
+Frame types
+Interlace
+Video characteristics
+Video quality
+Codec parts	
+DCT
+DPCM
+Deblocking filter
+Lapped transform
+Motion
+Compensation
+Estimation
+Vector
+Wavelet
+Daubechies
+DWT
+Theory	
+Entropy
+Information theory
+Timeline
+Kolmogorov complexity
+Quantization
+Rate–distortion
+Redundancy
+
+--- https://www.ascii-code.com ---
+
+The extended ASCII table
+ASCII, stands for American Standard Code for Information Interchange. It's a 7-bit character code where every single bit represents a unique character. On this webpage you will find 8 bits, 256 characters, ASCII table according to Windows-1252 (code page 1252) which is a superset of ISO 8859-1 in terms of printable characters. In the range 128 to 159 (hex 80 to 9F), ISO/IEC 8859-1 has invisible control characters, while Windows-1252 has writable characters. Windows-1252 is probably the most-used 8-bit character encoding in the world.
+ASCII control characters (character code 0-31)
+
+The first 32 characters in the ASCII-table are unprintable control codes and are used to control peripherals such as printers.
+
+DEC	OCT	HEX	BIN	Symbol	HTML Number	HTML Name	Description
+0	000	00	00000000	NUL	&#000;	 	Null char
+1	001	01	00000001	SOH	&#001;	 	Start of Heading
+2	002	02	00000010	STX	&#002;	 	Start of Text
+3	003	03	00000011	ETX	&#003;	 	End of Text
+4	004	04	00000100	EOT	&#004;	 	End of Transmission
+5	005	05	00000101	ENQ	&#005;	 	Enquiry
+6	006	06	00000110	ACK	&#006;	 	Acknowledgment
+7	007	07	00000111	BEL	&#007;	 	Bell
+8	010	08	00001000	BS	&#008;	 	Back Space
+9	011	09	00001001	HT	&#009;	 	Horizontal Tab
+10	012	0A	00001010	LF	&#010;	 	Line Feed
+11	013	0B	00001011	VT	&#011;	 	Vertical Tab
+12	014	0C	00001100	FF	&#012;	 	Form Feed
+13	015	0D	00001101	CR	&#013;	 	Carriage Return
+14	016	0E	00001110	SO	&#014;	 	Shift Out / X-On
+15	017	0F	00001111	SI	&#015;	 	Shift In / X-Off
+16	020	10	00010000	DLE	&#016;	 	Data Line Escape
+17	021	11	00010001	DC1	&#017;	 	Device Control 1 (oft. XON)
+18	022	12	00010010	DC2	&#018;	 	Device Control 2
+19	023	13	00010011	DC3	&#019;	 	Device Control 3 (oft. XOFF)
+20	024	14	00010100	DC4	&#020;	 	Device Control 4
+21	025	15	00010101	NAK	&#021;	 	Negative Acknowledgement
+22	026	16	00010110	SYN	&#022;	 	Synchronous Idle
+23	027	17	00010111	ETB	&#023;	 	End of Transmit Block
+24	030	18	00011000	CAN	&#024;	 	Cancel
+25	031	19	00011001	EM	&#025;	 	End of Medium
+26	032	1A	00011010	SUB	&#026;	 	Substitute
+27	033	1B	00011011	ESC	&#027;	 	Escape
+28	034	1C	00011100	FS	&#028;	 	File Separator
+29	035	1D	00011101	GS	&#029;	 	Group Separator
+30	036	1E	00011110	RS	&#030;	 	Record Separator
+31	037	1F	00011111	US	&#031;	 	Unit Separator
+ASCII printable characters (character code 32-127)
+
+Codes 32-127 are common for all the different variations of the ASCII table, they are called printable characters, represent letters, digits, punctuation marks, and a few miscellaneous symbols. You will find almost every character on your keyboard. Character 127 represents the command DEL.
+
+DEC	OCT	HEX	BIN	Symbol	HTML Number	HTML Name	Description
+32	040	20	00100000	 	&#32;	 	Space
+33	041	21	00100001	!	&#33;	 	Exclamation mark
+34	042	22	00100010	"	&#34;	&quot;	Double quotes (or speech marks)
+35	043	23	00100011	#	&#35;	 	Number
+36	044	24	00100100	$	&#36;	 	Dollar
+37	045	25	00100101	%	&#37;	 	Per cent sign
+38	046	26	00100110	&	&#38;	&amp;	Ampersand
+39	047	27	00100111	'	&#39;	 	Single quote
+40	050	28	00101000	(	&#40;	 	Open parenthesis (or open bracket)
+41	051	29	00101001	)	&#41;	 	Close parenthesis (or close bracket)
+42	052	2A	00101010	*	&#42;	 	Asterisk
+43	053	2B	00101011	+	&#43;	 	Plus
+44	054	2C	00101100	,	&#44;	 	Comma
+45	055	2D	00101101	-	&#45;	 	Hyphen
+46	056	2E	00101110	.	&#46;	 	Period, dot or full stop
+47	057	2F	00101111	/	&#47;	 	Slash or divide
+48	060	30	00110000	0	&#48;	 	Zero
+49	061	31	00110001	1	&#49;	 	One
+50	062	32	00110010	2	&#50;	 	Two
+51	063	33	00110011	3	&#51;	 	Three
+52	064	34	00110100	4	&#52;	 	Four
+53	065	35	00110101	5	&#53;	 	Five
+54	066	36	00110110	6	&#54;	 	Six
+55	067	37	00110111	7	&#55;	 	Seven
+56	070	38	00111000	8	&#56;	 	Eight
+57	071	39	00111001	9	&#57;	 	Nine
+58	072	3A	00111010	:	&#58;	 	Colon
+59	073	3B	00111011	;	&#59;	 	Semicolon
+60	074	3C	00111100	<	&#60;	&lt;	Less than (or open angled bracket)
+61	075	3D	00111101	=	&#61;	 	Equals
+62	076	3E	00111110	>	&#62;	&gt;	Greater than (or close angled bracket)
+63	077	3F	00111111	?	&#63;	 	Question mark
+64	100	40	01000000	@	&#64;	 	At symbol
+65	101	41	01000001	A	&#65;	 	Uppercase A
+66	102	42	01000010	B	&#66;	 	Uppercase B
+67	103	43	01000011	C	&#67;	 	Uppercase C
+68	104	44	01000100	D	&#68;	 	Uppercase D
+69	105	45	01000101	E	&#69;	 	Uppercase E
+70	106	46	01000110	F	&#70;	 	Uppercase F
+71	107	47	01000111	G	&#71;	 	Uppercase G
+72	110	48	01001000	H	&#72;	 	Uppercase H
+73	111	49	01001001	I	&#73;	 	Uppercase I
+74	112	4A	01001010	J	&#74;	 	Uppercase J
+75	113	4B	01001011	K	&#75;	 	Uppercase K
+76	114	4C	01001100	L	&#76;	 	Uppercase L
+77	115	4D	01001101	M	&#77;	 	Uppercase M
+78	116	4E	01001110	N	&#78;	 	Uppercase N
+79	117	4F	01001111	O	&#79;	 	Uppercase O
+80	120	50	01010000	P	&#80;	 	Uppercase P
+81	121	51	01010001	Q	&#81;	 	Uppercase Q
+82	122	52	01010010	R	&#82;	 	Uppercase R
+83	123	53	01010011	S	&#83;	 	Uppercase S
+84	124	54	01010100	T	&#84;	 	Uppercase T
+85	125	55	01010101	U	&#85;	 	Uppercase U
+86	126	56	01010110	V	&#86;	 	Uppercase V
+87	127	57	01010111	W	&#87;	 	Uppercase W
+88	130	58	01011000	X	&#88;	 	Uppercase X
+89	131	59	01011001	Y	&#89;	 	Uppercase Y
+90	132	5A	01011010	Z	&#90;	 	Uppercase Z
+91	133	5B	01011011	[	&#91;	 	Opening bracket
+92	134	5C	01011100	\	&#92;	 	Backslash
+93	135	5D	01011101	]	&#93;	 	Closing bracket
+94	136	5E	01011110	^	&#94;	 	Caret - circumflex
+95	137	5F	01011111	_	&#95;	 	Underscore
+96	140	60	01100000	`	&#96;	 	Grave accent
+97	141	61	01100001	a	&#97;	 	Lowercase a
+98	142	62	01100010	b	&#98;	 	Lowercase b
+99	143	63	01100011	c	&#99;	 	Lowercase c
+100	144	64	01100100	d	&#100;	 	Lowercase d
+101	145	65	01100101	e	&#101;	 	Lowercase e
+102	146	66	01100110	f	&#102;	 	Lowercase f
+103	147	67	01100111	g	&#103;	 	Lowercase g
+104	150	68	01101000	h	&#104;	 	Lowercase h
+105	151	69	01101001	i	&#105;	 	Lowercase i
+106	152	6A	01101010	j	&#106;	 	Lowercase j
+107	153	6B	01101011	k	&#107;	 	Lowercase k
+108	154	6C	01101100	l	&#108;	 	Lowercase l
+109	155	6D	01101101	m	&#109;	 	Lowercase m
+110	156	6E	01101110	n	&#110;	 	Lowercase n
+111	157	6F	01101111	o	&#111;	 	Lowercase o
+112	160	70	01110000	p	&#112;	 	Lowercase p
+113	161	71	01110001	q	&#113;	 	Lowercase q
+114	162	72	01110010	r	&#114;	 	Lowercase r
+115	163	73	01110011	s	&#115;	 	Lowercase s
+116	164	74	01110100	t	&#116;	 	Lowercase t
+117	165	75	01110101	u	&#117;	 	Lowercase u
+118	166	76	01110110	v	&#118;	 	Lowercase v
+119	167	77	01110111	w	&#119;	 	Lowercase w
+120	170	78	01111000	x	&#120;	 	Lowercase x
+121	171	79	01111001	y	&#121;	 	Lowercase y
+122	172	7A	01111010	z	&#122;	 	Lowercase z
+123	173	7B	01111011	{	&#123;	 	Opening brace
+124	174	7C	01111100	|	&#124;	 	Vertical bar
+125	175	7D	01111101	}	&#125;	 	Closing brace
+126	176	7E	01111110	~	&#126;	 	Equivalency sign - tilde
+127	177	7F	01111111		&#127;	 	Delete
+The extended ASCII codes (character code 128-255)
+
+There are several different variations of the 8-bit ASCII table. The table below is according to Windows-1252 (CP-1252) which is a superset of ISO 8859-1, also called ISO Latin-1, in terms of printable characters, but differs from the IANA's ISO-8859-1 by using displayable characters rather than control characters in the 128 to 159 range. Characters that differ from ISO-8859-1 is marked by light blue color.
+
+DEC	OCT	HEX	BIN	Symbol	HTML Number	HTML Name	Description
+128	200	80	10000000	€	&#128;	&euro;	Euro sign
+129	201	81	10000001	 	 	 	 
+130	202	82	10000010	‚	&#130;	&sbquo;	Single low-9 quotation mark
+131	203	83	10000011	ƒ	&#131;	&fnof;	Latin small letter f with hook
+132	204	84	10000100	„	&#132;	&bdquo;	Double low-9 quotation mark
+133	205	85	10000101	…	&#133;	&hellip;	Horizontal ellipsis
+134	206	86	10000110	†	&#134;	&dagger;	Dagger
+135	207	87	10000111	‡	&#135;	&Dagger;	Double dagger
+136	210	88	10001000	ˆ	&#136;	&circ;	Modifier letter circumflex accent
+137	211	89	10001001	‰	&#137;	&permil;	Per mille sign
+138	212	8A	10001010	Š	&#138;	&Scaron;	Latin capital letter S with caron
+139	213	8B	10001011	‹	&#139;	&lsaquo;	Single left-pointing angle quotation
+140	214	8C	10001100	Œ	&#140;	&OElig;	Latin capital ligature OE
+141	215	8D	10001101	 	 	 	 
+142	216	8E	10001110	Ž	&#142;	 	Latin capital letter Z with caron
+143	217	8F	10001111	 	 	 	 
+144	220	90	10010000	 	 	 	 
+145	221	91	10010001	‘	&#145;	&lsquo;	Left single quotation mark
+146	222	92	10010010	’	&#146;	&rsquo;	Right single quotation mark
+147	223	93	10010011	“	&#147;	&ldquo;	Left double quotation mark
+148	224	94	10010100	”	&#148;	&rdquo;	Right double quotation mark
+149	225	95	10010101	•	&#149;	&bull;	Bullet
+150	226	96	10010110	–	&#150;	&ndash;	En dash
+151	227	97	10010111	—	&#151;	&mdash;	Em dash
+152	230	98	10011000	˜	&#152;	&tilde;	Small tilde
+153	231	99	10011001	™	&#153;	&trade;	Trade mark sign
+154	232	9A	10011010	š	&#154;	&scaron;	Latin small letter S with caron
+155	233	9B	10011011	›	&#155;	&rsaquo;	Single right-pointing angle quotation mark
+156	234	9C	10011100	œ	&#156;	&oelig;	Latin small ligature oe
+157	235	9D	10011101	 	 	 	 
+158	236	9E	10011110	ž	&#158;	 	Latin small letter z with caron
+159	237	9F	10011111	Ÿ	&#159;	&Yuml;	Latin capital letter Y with diaeresis
+160	240	A0	10100000	 	&#160;	&nbsp;	Non-breaking space
+161	241	A1	10100001	¡	&#161;	&iexcl;	Inverted exclamation mark
+162	242	A2	10100010	¢	&#162;	&cent;	Cent sign
+163	243	A3	10100011	£	&#163;	&pound;	Pound sign
+164	244	A4	10100100	¤	&#164;	&curren;	Currency sign
+165	245	A5	10100101	¥	&#165;	&yen;	Yen sign
+166	246	A6	10100110	¦	&#166;	&brvbar;	Pipe, Broken vertical bar
+167	247	A7	10100111	§	&#167;	&sect;	Section sign
+168	250	A8	10101000	¨	&#168;	&uml;	Spacing diaeresis - umlaut
+169	251	A9	10101001	©	&#169;	&copy;	Copyright sign
+170	252	AA	10101010	ª	&#170;	&ordf;	Feminine ordinal indicator
+171	253	AB	10101011	«	&#171;	&laquo;	Left double angle quotes
+172	254	AC	10101100	¬	&#172;	&not;	Not sign
+173	255	AD	10101101		&#173;	&shy;	Soft hyphen
+174	256	AE	10101110	®	&#174;	&reg;	Registered trade mark sign
+175	257	AF	10101111	¯	&#175;	&macr;	Spacing macron - overline
+176	260	B0	10110000	°	&#176;	&deg;	Degree sign
+177	261	B1	10110001	±	&#177;	&plusmn;	Plus-or-minus sign
+178	262	B2	10110010	²	&#178;	&sup2;	Superscript two - squared
+179	263	B3	10110011	³	&#179;	&sup3;	Superscript three - cubed
+180	264	B4	10110100	´	&#180;	&acute;	Acute accent - spacing acute
+181	265	B5	10110101	µ	&#181;	&micro;	Micro sign
+182	266	B6	10110110	¶	&#182;	&para;	Pilcrow sign - paragraph sign
+183	267	B7	10110111	·	&#183;	&middot;	Middle dot - Georgian comma
+184	270	B8	10111000	¸	&#184;	&cedil;	Spacing cedilla
+185	271	B9	10111001	¹	&#185;	&sup1;	Superscript one
+186	272	BA	10111010	º	&#186;	&ordm;	Masculine ordinal indicator
+187	273	BB	10111011	»	&#187;	&raquo;	Right double angle quotes
+188	274	BC	10111100	¼	&#188;	&frac14;	Fraction one quarter
+189	275	BD	10111101	½	&#189;	&frac12;	Fraction one half
+190	276	BE	10111110	¾	&#190;	&frac34;	Fraction three quarters
+191	277	BF	10111111	¿	&#191;	&iquest;	Inverted question mark
+192	300	C0	11000000	À	&#192;	&Agrave;	Latin capital letter A with grave
+193	301	C1	11000001	Á	&#193;	&Aacute;	Latin capital letter A with acute
+194	302	C2	11000010	Â	&#194;	&Acirc;	Latin capital letter A with circumflex
+195	303	C3	11000011	Ã	&#195;	&Atilde;	Latin capital letter A with tilde
+196	304	C4	11000100	Ä	&#196;	&Auml;	Latin capital letter A with diaeresis
+197	305	C5	11000101	Å	&#197;	&Aring;	Latin capital letter A with ring above
+198	306	C6	11000110	Æ	&#198;	&AElig;	Latin capital letter AE
+199	307	C7	11000111	Ç	&#199;	&Ccedil;	Latin capital letter C with cedilla
+200	310	C8	11001000	È	&#200;	&Egrave;	Latin capital letter E with grave
+201	311	C9	11001001	É	&#201;	&Eacute;	Latin capital letter E with acute
+202	312	CA	11001010	Ê	&#202;	&Ecirc;	Latin capital letter E with circumflex
+203	313	CB	11001011	Ë	&#203;	&Euml;	Latin capital letter E with diaeresis
+204	314	CC	11001100	Ì	&#204;	&Igrave;	Latin capital letter I with grave
+205	315	CD	11001101	Í	&#205;	&Iacute;	Latin capital letter I with acute
+206	316	CE	11001110	Î	&#206;	&Icirc;	Latin capital letter I with circumflex
+207	317	CF	11001111	Ï	&#207;	&Iuml;	Latin capital letter I with diaeresis
+208	320	D0	11010000	Ð	&#208;	&ETH;	Latin capital letter ETH
+209	321	D1	11010001	Ñ	&#209;	&Ntilde;	Latin capital letter N with tilde
+210	322	D2	11010010	Ò	&#210;	&Ograve;	Latin capital letter O with grave
+211	323	D3	11010011	Ó	&#211;	&Oacute;	Latin capital letter O with acute
+212	324	D4	11010100	Ô	&#212;	&Ocirc;	Latin capital letter O with circumflex
+213	325	D5	11010101	Õ	&#213;	&Otilde;	Latin capital letter O with tilde
+214	326	D6	11010110	Ö	&#214;	&Ouml;	Latin capital letter O with diaeresis
+215	327	D7	11010111	×	&#215;	&times;	Multiplication sign
+216	330	D8	11011000	Ø	&#216;	&Oslash;	Latin capital letter O with slash
+217	331	D9	11011001	Ù	&#217;	&Ugrave;	Latin capital letter U with grave
+218	332	DA	11011010	Ú	&#218;	&Uacute;	Latin capital letter U with acute
+219	333	DB	11011011	Û	&#219;	&Ucirc;	Latin capital letter U with circumflex
+220	334	DC	11011100	Ü	&#220;	&Uuml;	Latin capital letter U with diaeresis
+221	335	DD	11011101	Ý	&#221;	&Yacute;	Latin capital letter Y with acute
+222	336	DE	11011110	Þ	&#222;	&THORN;	Latin capital letter THORN
+223	337	DF	11011111	ß	&#223;	&szlig;	Latin small letter sharp s - ess-zed
+224	340	E0	11100000	à	&#224;	&agrave;	Latin small letter a with grave
+225	341	E1	11100001	á	&#225;	&aacute;	Latin small letter a with acute
+226	342	E2	11100010	â	&#226;	&acirc;	Latin small letter a with circumflex
+227	343	E3	11100011	ã	&#227;	&atilde;	Latin small letter a with tilde
+228	344	E4	11100100	ä	&#228;	&auml;	Latin small letter a with diaeresis
+229	345	E5	11100101	å	&#229;	&aring;	Latin small letter a with ring above
+230	346	E6	11100110	æ	&#230;	&aelig;	Latin small letter ae
+231	347	E7	11100111	ç	&#231;	&ccedil;	Latin small letter c with cedilla
+232	350	E8	11101000	è	&#232;	&egrave;	Latin small letter e with grave
+233	351	E9	11101001	é	&#233;	&eacute;	Latin small letter e with acute
+234	352	EA	11101010	ê	&#234;	&ecirc;	Latin small letter e with circumflex
+235	353	EB	11101011	ë	&#235;	&euml;	Latin small letter e with diaeresis
+236	354	EC	11101100	ì	&#236;	&igrave;	Latin small letter i with grave
+237	355	ED	11101101	í	&#237;	&iacute;	Latin small letter i with acute
+238	356	EE	11101110	î	&#238;	&icirc;	Latin small letter i with circumflex
+239	357	EF	11101111	ï	&#239;	&iuml;	Latin small letter i with diaeresis
+240	360	F0	11110000	ð	&#240;	&eth;	Latin small letter eth
+241	361	F1	11110001	ñ	&#241;	&ntilde;	Latin small letter n with tilde
+242	362	F2	11110010	ò	&#242;	&ograve;	Latin small letter o with grave
+243	363	F3	11110011	ó	&#243;	&oacute;	Latin small letter o with acute
+244	364	F4	11110100	ô	&#244;	&ocirc;	Latin small letter o with circumflex
+245	365	F5	11110101	õ	&#245;	&otilde;	Latin small letter o with tilde
+246	366	F6	11110110	ö	&#246;	&ouml;	Latin small letter o with diaeresis
+247	367	F7	11110111	÷	&#247;	&divide;	Division sign
+248	370	F8	11111000	ø	&#248;	&oslash;	Latin small letter o with slash
+249	371	F9	11111001	ù	&#249;	&ugrave;	Latin small letter u with grave
+250	372	FA	11111010	ú	&#250;	&uacute;	Latin small letter u with acute
+251	373	FB	11111011	û	&#251;	&ucirc;	Latin small letter u with circumflex
+252	374	FC	11111100	ü	&#252;	&uuml;	Latin small letter u with diaeresis
+253	375	FD	11111101	ý	&#253;	&yacute;	Latin small letter y with acute
+254	376	FE	11111110	þ	&#254;	&thorn;	Latin small letter thorn
+255	377	FF	11111111	ÿ	&#255;	&yuml;	Latin small letter y with diaeresis
+
+
