@@ -2,7 +2,7 @@
 	"configurations": [
 	  {
 		"name": "Mac",
-		"includePath": ["${workspaceFolder}/**", "${workspaceFolder}/../../HEG/**"],
+		"includePath": ["${workspaceFolder}/**", "${workspaceFolder}/../HEG/include/"],
 		"defines": [],
 		"macFrameworkPath": [
 		  "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"

@@ -8,16 +8,17 @@
 #include <unistd.h>
 
 int main() {
-    // ftok to generate unique key
-    key_t key = ftok("shmfile", 65);
+    // ftok to generate unique key - make sure the file passed as parameter exists and is the same
+    // in both transmitter and receiver
+    key_t key = ftok("../include/IPCConstants.hpp", 65);
 
     // shmget returns an identifier in shmid
-    int shmid = shmget(key, BUFFER_SIZE, 0666 | IPC_CREAT);
+    int shmid = shmget(key, IPC::bufferSize, 0666 | IPC_CREAT);
 
     // shmat to attach to shared memory
     uint8_t* buffer = (uint8_t*)shmat(shmid, (void*)0, 0);
-    uint8_t* r      = &buffer[BUFFER_SIZE - 2];
-    uint8_t* w      = &buffer[BUFFER_SIZE - 1];
+    uint8_t* r      = &buffer[IPC::bufferSize - 2];
+    uint8_t* w      = &buffer[IPC::bufferSize - 1];
     *r              = 0;
     *w              = 0;
 
@@ -28,10 +29,11 @@ int main() {
 
     std::cout << "Done!\n";
 
-    while (clearMsg[0] != '\\') {
+    while (!(clearMsg[0] == IPC::terminationChar && clearMsg[1] == '\n')) {
         // get input line by line
-        std::cout << "Transmig Data : ";
+        std::cout << "Data to transmit: ";
         std::getline(std::cin, clearMsg);
+        clearMsg += '\n';
 
         std::string encodedMsg = ""; // Encoded message - not yet suitable for transmission
         for (size_t i = 0; i < clearMsg.size(); i++) {
@@ -46,11 +48,11 @@ int main() {
 
         for (size_t dataIndex = 0; dataIndex < data.size(); dataIndex++) { // scan the string
             buffer[*w] = data[dataIndex];
-            while (*w == ((*r) - 1) || *w == ((*r) + BUFFER_SIZE - 3)) {
+            while (*w == ((*r) - 1) || *w == ((*r) + IPC::bufferSize - 3)) {
                 // std::cout << "Waiting for the buffer to be read\n";
-                usleep(10000);
+                usleep(IPC::sleepTimeMicroSec);
             }; // wait if this is where the reader is located
-            *w         = (*w + 1) % (BUFFER_SIZE - 2);
+            *w = (*w + 1) % (IPC::bufferSize - 2);
         }
 
         // std::cout << "I'm done writing at location " << (int)*w << "\n";
