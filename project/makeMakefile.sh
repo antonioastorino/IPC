@@ -1,7 +1,7 @@
 base_dir="`pwd`/`dirname $0`/"
 
 # executable filen name
-target_name="receiver-out"
+target_name="chat-out"
 # choose where to place the executable
 target_folder="./"
 # edit your build folder if you want

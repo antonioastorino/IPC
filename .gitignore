@@ -1,5 +1,5 @@
 build
-receiver-out*
-transmitter-out*
+chat-out*
 .vscode
+shm-id
 Makefile

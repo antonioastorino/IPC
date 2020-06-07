@@ -4,17 +4,30 @@
 #include "IPCCommon.hpp"
 #include <string>
 
-IPC::Transmitter::Transmitter(const char* filePath, char secretChar) {
+IPC::Transmitter::Transmitter(const char* filePath, int txShmid) {
 
     if (IPC::Transmitter::s_initialized_) throw "Transmitter already initialized";
     Transmitter::s_initialized_ = true;
-    key_t key                   = ftok(filePath, secretChar);
 
-    // shmget returns an identifier in shmid
-    int shmid = shmget(key, IPC::bufferSize, 0666 | IPC_CREAT);
+    key_t key;
+    char secretChar = 0;
+    int flags       = 0666 | IPC_CREAT;
 
+    if (txShmid < 0) { flags |= IPC_EXCL; } // create a new shared memory if shmid is not specified
+
+    while (txShmid < 0) {
+        key = ftok(filePath, (secretChar)++);
+        // get shared memory ID based on the key and the desired buffer size
+        if (key > -1) { txShmid = shmget(key, IPC::bufferSize, flags); }
+    }
+    std::cout << "TX channel: " << txShmid << std::endl;
+    {
+        std::ofstream f("shm-id", std::ios::app);
+        f << " " << txShmid;
+        f.close();
+    }
     // shmat to attach to shared memory
-    this->buffer_ = (uint8_t*)shmat(shmid, (void*)0, 0);
+    this->buffer_ = (uint8_t*)shmat(txShmid, (void*)0, 0);
     this->r_      = &buffer_[IPC::bufferSize - 2]; // second last element's location
     this->w_      = &buffer_[IPC::bufferSize - 1]; // last element's location
     *this->r_     = 0;
@@ -56,7 +69,7 @@ void IPC::Transmitter::run() {
         // std::cout << "I'm done writing at location " << (int)*w << "\n";
     }
 
-    std::cout << "Termination character received\n";
+    std::cout << "Termination character send\n";
 
     // detach from shared memory
     shmdt(this->buffer_);

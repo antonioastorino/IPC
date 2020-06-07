@@ -1,20 +1,35 @@
 #include "IPCReceiver.hpp"
-#include "IPCCommon.hpp"
 #include "HEGEncoding.hpp"
+#include "IPCCommon.hpp"
 
-IPC::Receiver::Receiver(const char* filePath, char secretChar) {
+IPC::Receiver::Receiver(const char* filePath, int rxShmid) {
     if (Receiver::s_initialized_) throw "Receiver already initialized";
     Receiver::s_initialized_ = true;
 
     // ftok to generate unique key - make sure the file passed as parameter exists and is the
     // same
     // in both transmitter and receiver
-    key_t key = ftok(filePath, secretChar);
 
-    // get shared memory ID based on the key and the desired buffer size
-    this->shmid_ = shmget(key, IPC::bufferSize, 0666 | IPC_CREAT);
+    key_t key;
+    char secretChar = 0;
+    int flags       = 0666 | IPC_CREAT;
+
+    if (rxShmid < 0) { flags |= IPC_EXCL; } // create a new shared memory if shmid is not specified
+
+    while (rxShmid < 0) {
+        key = ftok(filePath, (secretChar)++);
+        // get shared memory ID based on the key and the desired buffer size
+        if (key > -1) { rxShmid = shmget(key, IPC::bufferSize, flags); }
+    }
+    std::cout << "RX channel: " << rxShmid << std::endl;
+    {
+        std::ofstream f("shm-id");
+        f << rxShmid;
+        f.close();
+    }
 
     // shmat to attach to shared memory
+    this->shmid_  = rxShmid;
     this->buffer_ = (uint8_t*)shmat(shmid_, (void*)0, 0);
     this->r_      = &this->buffer_[IPC::bufferSize - 2];
     this->w_      = &this->buffer_[IPC::bufferSize - 1];
@@ -47,6 +62,7 @@ void IPC::Receiver::run() {
                 // the condition below will never be fulfilled
                 if (receivedMsg[0] == IPC::terminationChar && receivedMsg[1] == '\n') {
                     endOfTransmission = true;
+                    std::cout << "Termination character received\n";
                     break;
                 }
 

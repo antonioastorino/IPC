@@ -5,7 +5,7 @@
 #include <sys/shm.h>
 #include <vector>
 #include <unistd.h>
-
+#include <fstream>
 
 namespace IPC {
 constexpr uint64_t bufferSize        = 200;

@@ -15,7 +15,7 @@ private:
     static bool s_initialized_;
 
 public:
-    Receiver(const char* filePath, char secretChar);
+    Receiver(const char*, int);
 
     void run();
 };

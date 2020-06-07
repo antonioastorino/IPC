@@ -14,7 +14,7 @@ private:
     static bool s_initialized_;
 
 public:
-    Transmitter(const char*, char);
+    Transmitter(const char*, int);
 
     void run();
 };

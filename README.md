@@ -1,5 +1,5 @@
 # IPC
-
+## Inter-process communication
 (Documentation under construction. Please, be patient)
 
 This project implements a messaging system between two applications. One is the receiver and one the transmitter.
