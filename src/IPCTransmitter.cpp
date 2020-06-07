@@ -23,11 +23,8 @@ IPC::Transmitter::Transmitter(const char* filePath, char secretChar) {
 
 void IPC::Transmitter::run() {
     std::string clearMsg;
-    std::cout << "Loading encoded alphabet from file...\n";
     const char* encodingFileName = "../data/huffman-code.txt";
     HEG::Map mp(encodingFileName);
-
-    std::cout << "Done!\n\n";
 
     while (!(clearMsg[0] == IPC::terminationChar && clearMsg[1] == '\n')) {
         // get input line by line

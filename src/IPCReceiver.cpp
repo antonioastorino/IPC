@@ -25,15 +25,10 @@ IPC::Receiver::Receiver(const char* filePath, char secretChar) {
 void IPC::Receiver::run() {
     // The following is be done in preparation for the transmission and could be skipped once
     // the encoding is established and saved.
-    std::cout << "Creating encoding based on the content of a file...\n";
     HEG::Encoding encoding("../assets/sample-text.txt");
-    std::cout << "Done!\n\n";
 
-    std::cout << "Printing encoded alphabet to file...\n";
     const char* encodingFileName = "../data/huffman-code.txt"; // TODO: define in a common file
     encoding.printEncoding(encodingFileName);
-    std::cout << "Done!\n\n";
-    std::cout << "\nTransmission started. Waiting for incoming messages...\n";
 
     std::vector<uint8_t> data;
     bool endOfTransmission = false;
@@ -45,7 +40,7 @@ void IPC::Receiver::run() {
                 encoding.decode(data, 0, data.size() * sizeof(data[0]) * 8 - 1,
                                 receivedMsg); // TODO: 8 is the number of bits per array element
                                               // and should be calculated/retrieved
-                std::cout << "Received message: " << receivedMsg;
+                std::cout << receivedMsg;
                 std::cout.flush();
 
                 // NOTE: the buffer size must be large enough to contain `\` and `\n` otherwise

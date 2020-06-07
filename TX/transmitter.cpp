@@ -1,13 +1,18 @@
+#include "HEGEncoding.hpp"
+#include "IPCCommon.hpp"
+#include "IPCReceiver.hpp"
 #include "IPCTransmitter.hpp"
-#include "BinaryMessageBuilder.hpp"
-#include "HEGMap.hpp"
-
+#include <thread>
 
 int main() {
-    // ftok to generate unique key - make sure the file passed as parameter exists and is the same
-    // in both transmitter and receiver
     IPC::Transmitter tx("../include/IPCCommon.hpp", 65);
-    tx.run();
+    IPC::Receiver rx("../include/IPCCommon.hpp", 66);
+
+    std::thread t_tx(&IPC::Transmitter::run, &tx);
+    std::thread t_rx(&IPC::Receiver::run, &rx);
+
+    t_tx.join();
+    t_rx.join();
 
     return 0;
 }
