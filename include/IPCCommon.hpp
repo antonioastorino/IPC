@@ -1,5 +1,11 @@
-#ifndef IPCConstants_hpp
-#define IPCConstants_hpp
+#ifndef IPCCommon_hpp
+#define IPCCommon_hpp
+#include <iostream>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <vector>
+#include <unistd.h>
+
 
 namespace IPC {
 constexpr uint64_t bufferSize        = 200;
@@ -8,4 +14,4 @@ constexpr uint8_t terminationChar    = '\\';
 
 } // namespace IPC
 
-#endif /* IPCConstants_hpp */
+#endif /* IPCCommon_hpp */
