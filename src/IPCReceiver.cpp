@@ -2,6 +2,9 @@
 #include "HEGEncoding.hpp"
 #include "IPCCommon.hpp"
 #include <sys/ioctl.h>
+#ifdef __linux__
+#include <iomanip>
+#endif
 
 IPC::Receiver::Receiver(const char* filePath, int rxShmid) {
     if (Receiver::s_initialized_) throw "Receiver already initialized";
