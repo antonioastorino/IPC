@@ -1,6 +1,7 @@
 #include "IPCReceiver.hpp"
 #include "HEGEncoding.hpp"
 #include "IPCCommon.hpp"
+#include <sys/ioctl.h>
 
 IPC::Receiver::Receiver(const char* filePath, int rxShmid) {
     if (Receiver::s_initialized_) throw "Receiver already initialized";
@@ -55,7 +56,12 @@ void IPC::Receiver::run() {
                 encoding.decode(data, 0, data.size() * sizeof(data[0]) * 8 - 1,
                                 receivedMsg); // TODO: 8 is the number of bits per array element
                                               // and should be calculated/retrieved
-                std::cout << receivedMsg;
+
+                struct winsize size;
+                ioctl(STDOUT_FILENO, TIOCGWINSZ, &size); // get window size
+
+                std::cout << std::setw(size.ws_col) << std::right << "Them (most likely you again)\n";
+                std::cout << std::setw(size.ws_col) << std::right << receivedMsg << " ";
                 std::cout.flush();
 
                 // NOTE: the buffer size must be large enough to contain `\` and `\n` otherwise

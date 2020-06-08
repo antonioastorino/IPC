@@ -41,7 +41,7 @@ void IPC::Transmitter::run() {
 
     while (!(clearMsg[0] == IPC::terminationChar && clearMsg[1] == '\n')) {
         // get input line by line
-        std::cout << "Data to transmit: ";
+        std::cout << "You\n ";
         std::getline(std::cin, clearMsg);
         clearMsg += '\n';
 

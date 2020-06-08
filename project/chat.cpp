@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <thread>
+#include <stdlib.h>
 
 int main() {
     int rxShmid;
@@ -22,6 +23,7 @@ int main() {
 
     IPC::Receiver rx("../include/IPCCommon.hpp", rxShmid);
     IPC::Transmitter tx("../include/IPCCommon.hpp", txShmid);
+    std::system("clear");
 
     std::thread t_rx(&IPC::Receiver::run, &rx);
     std::thread t_tx(&IPC::Transmitter::run, &tx);
