@@ -8,8 +8,8 @@ private:
     Transmitter();
 
     uint8_t* buffer_;
-    uint8_t* r_; // receiver's index (r stands for reader)
-    uint8_t* w_; // transmitter's index (w stands for writer)
+    uint8_t* p_r_; // receiver's index (r stands for reader)
+    uint8_t* p_w_; // transmitter's index (w stands for writer)
 
     static bool s_initialized_;
 

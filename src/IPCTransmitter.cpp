@@ -28,10 +28,10 @@ IPC::Transmitter::Transmitter(const char* filePath, int txShmid) {
     }
     // shmat to attach to shared memory
     this->buffer_ = (uint8_t*)shmat(txShmid, (void*)0, 0);
-    this->r_      = &buffer_[IPC::bufferSize - 2]; // second last element's location
-    this->w_      = &buffer_[IPC::bufferSize - 1]; // last element's location
-    *this->r_     = 0;
-    *this->w_     = 0;
+    this->p_r_      = &buffer_[IPC::bufferSize - 2]; // second last element's location
+    this->p_w_      = &buffer_[IPC::bufferSize - 1]; // last element's location
+    *this->p_r_     = 0;
+    *this->p_w_     = 0;
 }
 
 void IPC::Transmitter::run() {
@@ -57,13 +57,13 @@ void IPC::Transmitter::run() {
         std::vector<uint8_t> data = BinaryMessageBuilder::build<uint8_t>(encodedMsg);
 
         for (size_t dataIndex = 0; dataIndex < data.size(); dataIndex++) { // scan the string
-            buffer_[*this->w_] = data[dataIndex];
-            while (*this->w_ == ((*this->r_) - 1)
-                   || *this->w_ == ((*this->r_) + IPC::bufferSize - 3)) {
+            buffer_[*this->p_w_] = data[dataIndex];
+            while (*this->p_w_ == ((*this->p_r_) - 1)
+                   || *this->p_w_ == ((*this->p_r_) + IPC::bufferSize - 3)) {
                 // std::cout << "Waiting for the buffer to be read\n";
                 usleep(IPC::sleepTimeMicroSec);
             }; // wait if this is where the reader is located
-            *this->w_ = (*this->w_ + 1) % (IPC::bufferSize - 2);
+            *this->p_w_ = (*this->p_w_ + 1) % (IPC::bufferSize - 2);
         }
 
         // std::cout << "I'm done writing at location " << (int)*w << "\n";

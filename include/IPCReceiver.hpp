@@ -8,8 +8,8 @@ private:
     Receiver();
 
     uint8_t* buffer_;
-    uint8_t* r_;
-    uint8_t* w_;
+    uint8_t* p_r_;
+    uint8_t* p_w_;
     int shmid_;
 
     static bool s_initialized_;

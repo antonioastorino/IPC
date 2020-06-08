@@ -32,10 +32,10 @@ IPC::Receiver::Receiver(const char* filePath, int rxShmid) {
     // shmat to attach to shared memory
     this->shmid_  = rxShmid;
     this->buffer_ = (uint8_t*)shmat(shmid_, (void*)0, 0);
-    this->r_      = &this->buffer_[IPC::bufferSize - 2];
-    this->w_      = &this->buffer_[IPC::bufferSize - 1];
-    *this->r_     = 0;
-    *this->w_     = 0;
+    this->p_r_      = &this->buffer_[IPC::bufferSize - 2];
+    this->p_w_      = &this->buffer_[IPC::bufferSize - 1];
+    *this->p_r_     = 0;
+    *this->p_w_     = 0;
 }
 
 void IPC::Receiver::run() {
@@ -49,7 +49,7 @@ void IPC::Receiver::run() {
     std::vector<uint8_t> data;
     bool endOfTransmission = false;
     while (!endOfTransmission) { // keep reading until you hit the read location
-        while (*this->w_ == *this->r_) {
+        while (*this->p_w_ == *this->p_r_) {
             usleep(IPC::sleepTimeMicroSec);
             if (!data.empty()) {
                 std::string receivedMsg = "";
@@ -81,9 +81,9 @@ void IPC::Receiver::run() {
             // std::cout << "Waiting for message... \n";
         }
 
-        data.push_back(this->buffer_[*this->r_]);
+        data.push_back(this->buffer_[*this->p_r_]);
 
-        *this->r_ = (*this->r_ + 1) % (IPC::bufferSize - 2);
+        *this->p_r_ = (*this->p_r_ + 1) % (IPC::bufferSize - 2);
         // std::cout << "I'm done reading at location " << (int)*r << "\n";
     }
 
