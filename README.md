@@ -1,6 +1,5 @@
 # IPC
 ## Inter-process communication
-(Documentation under construction. Please, be patient)
 
 *IPC* implements a messaging system between two instances of the same applications.
 
@@ -28,23 +27,102 @@ Once you are done, terminate the communication by sending **from both windows** 
 
 ## How it works
 ### General description
-The communication between the two windows occurs through a shared buffer. The buffer is identified by an ID (`shmid`). The first instance creates 2 shared buffers, one for transmitting and one for receiving messages. The two `shmid`'s are saved in a file called `shm-id`. The second instance of the app will read `shm-id` and use the saved ID's in inverted order. The file is erased when either application terminates.
+The communication between the two users occurs through shared buffers. The buffers are identified by their respective `shmid`, say **A** and **B**.
 
-The application itself has two child threads:
+The first instance of the app creates both buffers and attaches itself to them. It uses buffer **A** for transmitting (writing) messages and buffer **B** for receiving (reading) messages. The two respective `shmid`'s are saved in a file called `shm-id`.
+
+The second instance of the app reads from `shm-id` the saved ID's and attaches itself to them. Then, it transmits messages by writing on **B** and receives messages by reading from **A**, namely the opposite of what the first instance does.
+
+The `smd-id` file is erased when either app instance terminates.
+
+Each app instance has two independent child threads:
 
 - **transmitter**, which writes on one buffer
 - **receiver**, which reads from the other buffer
 
-Because of the perfect symmetry of the communication system, I will describe the implementation and use of one buffer only
-
 ### Shared circular buffer
-The shared buffer has a fixed length stored in `IPC::bufferSize` variable, initialized in `IPCCommon.hpp`. It is used as a *circular buffer*.
+The shared buffers have same, fixed length, whose value is stored in the `IPC::bufferSize` constant, defined in `IPCCommon.hpp`. The buffers are used as a *circular buffer*, as described below.
 
-Let `w` and `r` be the indices at which the transmitter and receiver, respectively, are currently accessing the buffer. The values of `w` and `r` are stored in the last two buffer elements. This implies that, if the buffer is a vector of 8-bit bytes, the buffer cannot be larger than 258 elements, otherwise it would not be possible for the last two elements to contain the required information.
+Due to the perfect symmetry of the communication system, in the following, it is not specified which app instance is considered and the description is given as seen from one buffer's standpoint, no matter if **A** or **B** - at this stage, they are logically indistinguishable.
 
-Initially, `w = r = 0` and the transmitter is waiting for inputs from the terminal.
-#### Transmitter behavior
-Every time the buffer at position `w` is updated by the transmitter, `w` is incremented (and reset when exceeding the buffer size) unless its position is `r - 1`. This means that the receiver has not read the buffer yet and the transmitted has made a full circle around the buffer and "hit" the receiver from behind.
-#### Receiver behavior
-Every time the buffer at position `r` is read by the receiver, `r` is incremented (and reset when exceeding the buffer size) unless its position is `w`. This means that the receiver read all the messages sent by the transmitter and has to wait.
+Let `w` and `r` be the indices at which the transmitter and receiver, respectively, are currently accessing the buffer. The values of `w` and `r` are stored in the last two buffer elements. This entails that, if the buffer is a vector of N-bit elements, the buffer cannot be larger than `2^N + 2` elements, otherwise it would be impossible for the `w` and `r` to store the addresses of any element location. In addition, the buffer has to have at least 4 elements.
 
+> More precisely, it is necessary to have 2 elements plus enough memory to contain the encoded *termination character* (`\`) and the encoded *new line* character (`\n`). If this condition is not satisfied, it will not be possible to gracefully end the communication.
+
+#### Initial condition
+
+Initially, `w = r = 0` and the transmitter is waiting for inputs from the terminal. The buffer contains invalid (`I`) data, except for that at locations `buffer size - 2` and `buffer size - 1`, respectively being the read index location (`RIL`), the write index location (`WIL`).
+
+```
+                Initial condition
+
+w = 0                                    RIL
+  |                                       |
+ ------------------------       ---------------- 
+| I | I | I | I | I | I |  ...  | I | I | 0 | 0 |
+ ------------------------       ----------------     
+  |                                           |
+r = 0                                        WIL
+```
+
+
+#### Full-buffer condition
+When a new message is ready to be sent, the transmitter
+
+1. writes to the buffer at location `w`
+2. checks if `w = r - 1`
+3. if not, increments `w`
+
+The condition `w = r - 1` is achieved when the transmitter writes faster than the receiver reads. This means that the transmitted has made a full circle around the buffer and "hit" the receiver from behind. In other words, the buffer is *full,* meaning that all the data is valid (`V`) and waiting for being read.
+
+```
+                 Full-buffer condition
+
+              w = r - 1                  RIL
+                  |                       |
+ ------------------------       ----------------
+| V | V | V | V | V | V |  ...  | V | V | 4 | 3 |
+ ------------------------       ----------------    
+                      |                       |
+                    r = 4                    WIL
+```
+
+#### Empty-buffer condition
+The receiver acts as follows:
+
+1. checks if `r = w`
+2. if not
+    - reads from the buffer and
+    - increments `r`
+
+The condition `r = w` means that the receiver has read all the data sent by the transmitter and must wait for new data to be written. The buffer contains only invalid (`I`) data and therefore it is considered as *empty*.
+
+```
+               Empty-buffer condition
+
+                w = 4                    RIL
+                  |                       |
+ ------------------------       ----------------
+| I | I | I | I | I | I |  ...  | I | I | 4 | 3 |
+ ------------------------       ----------------    
+                  |                           |
+                r = w                        WIL
+```
+#### Steady state
+At steady state, the buffer is partly full and the writer is "ahead" with respect to the reader. Since the buffer is circular, this **cannot** be expressed by the relation `w > r` but simply by the fact that the two conditions above are not met.
+
+```
+                    Steady state
+
+    w = 1                                RIL
+      |                                   |
+ ------------------------       ----------------
+| V | V | I | I | V | V |  ...  | V | V | 4 | 1 |
+ ------------------------       ----------------    
+                  |                           |
+                r = 4                        WIL
+```
+## Final remarks
+This project is not intended for professional use. It is designed for learning purposes and for fun. Nevertheless, I would appreciate constructive feedback which I would surely consider for improving the project itself and learn more about the topic and programming.
+
+Please, contact me if you have questions or comments.
