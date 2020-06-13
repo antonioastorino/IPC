@@ -23,7 +23,9 @@ Now you can use the current terminal window for one user. You then need to open 
 ```
 Enjoy chatting with yourself!
 
-Once you are done, terminate the communication by sending **from both windows** the character `\`. This will terminate the communication and free the shared memory used to implement it.
+Once you are done, terminate the communication by sending **from both windows** the character `\`. This will terminate the communication and free the shared memory used to implement it - see screenshot.
+
+![screenshot](./doc/images/chat.png)
 
 ## How it works
 ### General description
