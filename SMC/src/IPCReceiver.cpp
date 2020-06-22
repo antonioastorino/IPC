@@ -1,12 +1,12 @@
-#include "IPCReceiver.hpp"
+#include "SMCReceiver.hpp"
 #include "HEGEncoding.hpp"
-#include "IPCCommon.hpp"
+#include "SMCCommon.hpp"
 #include <sys/ioctl.h>
 #ifdef __linux__
 #include <iomanip>
 #endif
 
-IPC::Receiver::Receiver(const char* filePath, int rxShmid) {
+SMC::Receiver::Receiver(const char* filePath, int rxShmid) {
     if (Receiver::s_initialized_) throw "Receiver already initialized";
     Receiver::s_initialized_ = true;
 
@@ -23,7 +23,7 @@ IPC::Receiver::Receiver(const char* filePath, int rxShmid) {
     while (rxShmid < 0) {
         key = ftok(filePath, (secretChar)++);
         // get shared memory ID based on the key and the desired buffer size
-        if (key > -1) { rxShmid = shmget(key, IPC::bufferSize, flags); }
+        if (key > -1) { rxShmid = shmget(key, SMC::bufferSize, flags); }
     }
     std::cout << "RX channel: " << rxShmid << std::endl;
     {
@@ -35,25 +35,25 @@ IPC::Receiver::Receiver(const char* filePath, int rxShmid) {
     // shmat to attach to shared memory
     this->shmid_  = rxShmid;
     this->buffer_ = (uint8_t*)shmat(shmid_, (void*)0, 0);
-    this->p_r_      = &this->buffer_[IPC::bufferSize - 2];
-    this->p_w_      = &this->buffer_[IPC::bufferSize - 1];
+    this->p_r_      = &this->buffer_[SMC::bufferSize - 2];
+    this->p_w_      = &this->buffer_[SMC::bufferSize - 1];
     *this->p_r_     = 0;
     *this->p_w_     = 0;
 }
 
-void IPC::Receiver::run() {
+void SMC::Receiver::run() {
     // The following is be done in preparation for the transmission and could be skipped once
     // the encoding is established and saved.
-    HEG::Encoding encoding("../assets/sample-text.txt");
+    HEG::Encoding encoding("assets/sample-text.txt");
 
-    const char* encodingFileName = "../data/huffman-code.txt"; // TODO: define in a common file
+    const char* encodingFileName = "data/huffman-code.txt"; // TODO: define in a common file
     encoding.printEncoding(encodingFileName);
 
     std::vector<uint8_t> data;
     bool endOfTransmission = false;
     while (!endOfTransmission) { // keep reading until you hit the read location
         while (*this->p_w_ == *this->p_r_) {
-            usleep(IPC::sleepTimeMicroSec);
+            usleep(SMC::sleepTimeMicroSec);
             if (!data.empty()) {
                 std::string receivedMsg = "";
                 encoding.decode(data, 0, data.size() * sizeof(data[0]) * 8 - 1,
@@ -69,7 +69,7 @@ void IPC::Receiver::run() {
 
                 // NOTE: the buffer size must be large enough to contain `\` and `\n` otherwise
                 // the condition below will never be fulfilled
-                if (receivedMsg[0] == IPC::terminationChar && receivedMsg[1] == '\n') {
+                if (receivedMsg[0] == SMC::terminationChar && receivedMsg[1] == '\n') {
                     endOfTransmission = true;
                     std::cout << "Termination character received\n";
                     break;
@@ -86,7 +86,7 @@ void IPC::Receiver::run() {
 
         data.push_back(this->buffer_[*this->p_r_]);
 
-        *this->p_r_ = (*this->p_r_ + 1) % (IPC::bufferSize - 2);
+        *this->p_r_ = (*this->p_r_ + 1) % (SMC::bufferSize - 2);
         // std::cout << "I'm done reading at location " << (int)*r << "\n";
     }
 
@@ -97,4 +97,4 @@ void IPC::Receiver::run() {
     shmctl(this->shmid_, IPC_RMID, NULL);
 }
 
-bool IPC::Receiver::s_initialized_ = false;
+bool SMC::Receiver::s_initialized_ = false;

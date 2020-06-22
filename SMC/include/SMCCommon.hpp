@@ -1,5 +1,5 @@
-#ifndef IPCCommon_hpp
-#define IPCCommon_hpp
+#ifndef SMCCommon_hpp
+#define SMCCommon_hpp
 #include <iostream>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -7,11 +7,11 @@
 #include <unistd.h>
 #include <fstream>
 
-namespace IPC {
+namespace SMC {
 constexpr uint64_t bufferSize        = 200;
 constexpr uint32_t sleepTimeMicroSec = 1000;
 constexpr uint8_t terminationChar    = '\\';
 
-} // namespace IPC
+} // namespace SMC
 
-#endif /* IPCCommon_hpp */
+#endif /* SMCCommon_hpp */

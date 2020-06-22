@@ -1,8 +1,8 @@
-#ifndef IPCTransmitter_hpp
-#define IPCTransmitter_hpp
+#ifndef SMCTransmitter_hpp
+#define SMCTransmitter_hpp
 #include <cstdint>
 
-namespace IPC {
+namespace SMC {
 class Transmitter {
 private:
     Transmitter();
@@ -18,6 +18,6 @@ public:
 
     void run();
 };
-} // namespace IPC
+} // namespace SMC
 
-#endif /* IPCTransmitter_hpp */
+#endif /* SMCTransmitter_hpp */

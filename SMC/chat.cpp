@@ -1,7 +1,7 @@
 #include "HEGEncoding.hpp"
-#include "IPCCommon.hpp"
-#include "IPCReceiver.hpp"
-#include "IPCTransmitter.hpp"
+#include "SMCCommon.hpp"
+#include "SMCReceiver.hpp"
+#include "SMCTransmitter.hpp"
 #include <fstream>
 #include <sstream>
 #include <thread>
@@ -21,12 +21,12 @@ int main() {
         }
     }
 
-    IPC::Receiver rx("../include/IPCCommon.hpp", rxShmid);
-    IPC::Transmitter tx("../include/IPCCommon.hpp", txShmid);
+    SMC::Receiver rx("include/SMCCommon.hpp", rxShmid);
+    SMC::Transmitter tx("include/SMCCommon.hpp", txShmid);
     std::system("clear");
 
-    std::thread t_rx(&IPC::Receiver::run, &rx);
-    std::thread t_tx(&IPC::Transmitter::run, &tx);
+    std::thread t_rx(&SMC::Receiver::run, &rx);
+    std::thread t_tx(&SMC::Transmitter::run, &tx);
 
     t_rx.join();
     t_tx.join();

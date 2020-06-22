@@ -1,8 +1,8 @@
-#ifndef IPCReceiver_hpp
-#define IPCReceiver_hpp
+#ifndef SMCReceiver_hpp
+#define SMCReceiver_hpp
 #include <cstdint>
 
-namespace IPC {
+namespace SMC {
 class Receiver {
 private:
     Receiver();
@@ -19,6 +19,6 @@ public:
 
     void run();
 };
-} // namespace IPC
+} // namespace SMC
 
-#endif /* IPCReceiver_hpp */
+#endif /* SMCReceiver_hpp */
