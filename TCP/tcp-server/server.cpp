@@ -47,15 +47,22 @@ int main() {
         }
 
         if (fork() == 0) {
-            std::string buffer = "";
-            // receive message from the client
-            int bytes_recv = recv(client_socket, &buffer, 4096, 0);
+            char buffer[MAX_MSG_LEN];
+            buffer[0] = 0;
+            while (!(buffer[0] == 92 && buffer[1] == 0)) {
+                memset(&buffer, 0, MAX_MSG_LEN);
+                // receive message from the client
+                int bytes_recv = recv(client_socket, &buffer, MAX_MSG_LEN, 0);
 
-            std::stringstream s;
-            s << "Message:       " << buffer << "\nClient socket: " << client_socket;
+                std::stringstream s;
+                s << "Message:       " << buffer << "\nClient socket: " << client_socket;
+                TCP::info(s.str().c_str());
 
-            TCP::info(s.str().c_str());
-            send(client_socket, &buffer, sizeof(buffer), 0);
+                send(client_socket, &buffer, sizeof(buffer), 0);
+            }
+
+            std::cout << "Closing socket Nr. " << client_socket << std::endl;
+            shutdown(client_socket, SHUT_RDWR);
             close(client_socket);
             return 0;
         } else {

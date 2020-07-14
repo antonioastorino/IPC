@@ -12,6 +12,7 @@
 
 #include "TCPLog.hpp"
 
+#define MAX_MSG_LEN 4096
 
 #define ERR_CONNECTION_FAILURE -1
 #define ERR_BIND_TO_SOCKET_FAILURE -2

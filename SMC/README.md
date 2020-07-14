@@ -124,6 +124,6 @@ At steady state, the buffer is partly full and the writer is "ahead" with respec
                 r = 4                        WIL
 ```
 ## Final remarks
-This project is not intended for professional use. It is designed for learning purposes and for fun. Nevertheless, I would appreciate constructive feedback which I would surely consider for improving the project itself and learn more about the topic and programming.
+This project is not intended for professional use. It is designed for learning purposes and for fun. Nevertheless, I would appreciate constructive feedback which I would surely consider for improving the project itself and learning more about the topic and programming.
 
 Please, contact me if you have questions or comments.

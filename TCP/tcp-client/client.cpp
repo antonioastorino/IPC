@@ -11,9 +11,9 @@ int main() {
     int network_socket = socket(domain, type, protocol);
     // specify address
     struct sockaddr_in server_address;
-    server_address.sin_family      = AF_INET;
-    server_address.sin_port        = htons(9002);       // Use 80 for HTTP
-    server_address.sin_addr.s_addr = htonl(0x7F000001); // 127.0.0.1
+    server_address.sin_family = AF_INET;
+    server_address.sin_port   = htons(9002); // Use 80 for HTTP
+    inet_aton("127.0.0.1", (in_addr*)&server_address.sin_addr.s_addr);
 
     int connection_status
         = connect(network_socket, (struct sockaddr*)&server_address, sizeof(server_address));
@@ -23,18 +23,22 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    std::string client_message;
+    std::string client_message = "";
     std::cout << "Message to the server" << std::endl;
 
-    std::getline(std::cin, client_message);
+    while (!(client_message[0] == 92 && client_message[1] == 0)) {
+        std::getline(std::cin, client_message);
 
-    send(network_socket, &client_message, sizeof(client_message), 0);
+        send(network_socket, client_message.c_str(), client_message.length()+1, 0);
 
-    std::string server_response;
-    recv(network_socket, &server_response, sizeof(server_response), 0);
+        char server_response[MAX_MSG_LEN];
+        recv(network_socket, &server_response, MAX_MSG_LEN, 0);
 
-    TCP::info(server_response);
+        TCP::info(server_response);
+    }
 
+    std::cout << "Closing socket Nr. " << network_socket << std::endl;
+    shutdown(network_socket, SHUT_RDWR);
     close(network_socket);
     return 0;
 }
