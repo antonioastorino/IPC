@@ -1,4 +1,4 @@
-#include "common.hpp"
+#include "TCPCommon.hpp"
 
 int main() {
     std::system("clear");
@@ -12,21 +12,29 @@ int main() {
     // specify address
     struct sockaddr_in server_address;
     server_address.sin_family      = AF_INET;
-    server_address.sin_port        = htons(9002);
-    server_address.sin_addr.s_addr = INADDR_ANY;
+    server_address.sin_port        = htons(9002);       // Use 80 for HTTP
+    server_address.sin_addr.s_addr = htonl(0x7F000001); // 127.0.0.1
 
     int connection_status
         = connect(network_socket, (struct sockaddr*)&server_address, sizeof(server_address));
 
-	if (connection_status == -1) {
-		std::cout << "Connection error\n";
-		return EXIT_FAILURE;
-	}
+    if (connection_status == -1) {
+        TCP::error("Connection error");
+        return EXIT_FAILURE;
+    }
 
-    char server_response[256];
+    std::string client_message;
+    std::cout << "Message to the server" << std::endl;
+
+    std::getline(std::cin, client_message);
+
+    send(network_socket, &client_message, sizeof(client_message), 0);
+
+    std::string server_response;
     recv(network_socket, &server_response, sizeof(server_response), 0);
 
-    std::cout << server_response << std::endl;
+    TCP::info(server_response);
+
     close(network_socket);
     return 0;
 }
