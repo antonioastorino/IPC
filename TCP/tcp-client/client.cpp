@@ -24,14 +24,17 @@ int main() {
     }
 
     std::string client_message = "";
-    std::cout << "Message to the server" << std::endl;
+
+    char server_response[MAX_MSG_LEN];
+    recv(network_socket, &server_response, MAX_MSG_LEN, 0);
+    TCP::info(server_response);
 
     while (!(client_message[0] == 92 && client_message[1] == 0)) {
+        std::cout << "Message to the server: ";
         std::getline(std::cin, client_message);
 
-        send(network_socket, client_message.c_str(), client_message.length()+1, 0);
+        send(network_socket, client_message.c_str(), client_message.length() + 1, 0);
 
-        char server_response[MAX_MSG_LEN];
         recv(network_socket, &server_response, MAX_MSG_LEN, 0);
 
         TCP::info(server_response);

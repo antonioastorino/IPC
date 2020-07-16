@@ -45,6 +45,8 @@ int main() {
             TCP::error("Problem with client connecting");
             return ERR_CLIENT_CONNECTING_FAILURE;
         }
+        const char welcome_msg[] = "Welcome to this fantastic TCP server";
+        send(client_socket, &welcome_msg, sizeof(welcome_msg), 0);
 
         if (fork() == 0) {
             char buffer[MAX_MSG_LEN];
@@ -66,7 +68,7 @@ int main() {
             close(client_socket);
             return 0;
         } else {
-            TCP::info("Server forked");
+            TCP::info("Connection accepted");
         }
     }
 
