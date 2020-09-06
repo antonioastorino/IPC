@@ -68,7 +68,9 @@ int main() {
             close(client_socket);
             return 0;
         } else {
-            TCP::info("Connection accepted");
+            std::stringstream s;
+            s << "Connection to socket nr. " << client_socket << " accepted";
+            TCP::info(s.str());
         }
     }
 
